@@ -77,7 +77,7 @@ namespace libusb_ext
     uint16_t wLength = 0;
     uint8_t *data    = 0;
 
-    std::cout << "[libusb_ext::set_isochronous_delay] libusb_control_transfer: (bmRequestType: " << bmRequestType << ", bRequest: " << bRequest << ", wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
+    std::cout << "[libusb_ext::set_isochronous_delay] libusb_control_transfer: (bmRequestType: " << bmRequestType << ", bRequest: " << static_cast<int>(bRequest+0x30) << ", wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
     return libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
   }
 
@@ -92,7 +92,7 @@ namespace libusb_ext
     uint16_t wLength = 6;
     unsigned char data[]   = { u1sel, u1pel, u2sel, u2pel, 0x00, 0x00 };
 
-    std::cout << "[libusb_ext::set_sel] libusb_control_transfer: (bmRequestType: " << bmRequestType << ", bRequest: " << bRequest << ", wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
+    std::cout << "[libusb_ext::set_sel] libusb_control_transfer: (wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
     return libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
   }
 
@@ -108,7 +108,7 @@ namespace libusb_ext
     uint16_t wLength = 0;
     uint8_t *data    = 0;
 
-    std::cout << "[libusb_ext::set_feature] libusb_control_transfer: (bmRequestType: " << bmRequestType << ", bRequest: " << bRequest << ", wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
+    std::cout << "[libusb_ext::set_feature] libusb_control_transfer: (wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
     return libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
   }
 
@@ -128,7 +128,7 @@ namespace libusb_ext
     uint16_t wLength = 0;
     uint8_t *data    = 0;
 
-    std::cout << "[libusb_ext::set_feature_function_suspend] libusb_control_transfer: (bmRequestType: " << bmRequestType << ", bRequest: " << bRequest << ", wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
+    std::cout << "[libusb_ext::set_feature_function_suspend] libusb_control_transfer: (wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
     return libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
   }
 }
