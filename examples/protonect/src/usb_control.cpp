@@ -89,7 +89,7 @@ namespace libusb_ext
     uint16_t wValue  = 0;
     uint16_t wIndex  = 0;
     uint16_t wLength = 6;
-    unsigned char data[6]   = { 0x55, 0, 0x55, 0, 0, 0 };
+    unsigned char data[6]   = { u1sel, u1pel, u2sel, u2pel, 0, 0 };
 
     return libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
   }
@@ -224,7 +224,7 @@ UsbControl::ResultCode UsbControl::setIsochronousDelay()
 
 UsbControl::ResultCode UsbControl::setPowerStateLatencies()
 {
-  std::cout << "[UsbControl::setPowerStateLatencies] Setting latencies" << std::endl;
+  std::cout << "[UsbControl::setPowerStateLatencies] Setting latencies (sel u1/u2)" << std::endl;
   int r = libusb_ext::set_sel(handle_, timeout_, 0x55, 0, 0x55, 0);
 
   return checkLibusbResult("setPowerStateLatencies", r);
@@ -261,7 +261,7 @@ UsbControl::ResultCode UsbControl::setVideoTransferFunctionState(UsbControl::Sta
 UsbControl::ResultCode UsbControl::setIrInterfaceState(UsbControl::State state)
 {
   int alternate_setting = state == Enabled ? 1 : 0;
-  std::cout << "[UsbControl::setIrInterfaceState] Setting stream status: " << alternate_setting << std::endl;
+  std::cout << "[UsbControl::setIrInterfaceState] Setting stream status: " << state << std::endl;
   int r = libusb_set_interface_alt_setting(handle_, IrInterfaceId, alternate_setting);
 
   return checkLibusbResult("setIrInterfaceState", r);
