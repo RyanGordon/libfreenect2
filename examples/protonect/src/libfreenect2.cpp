@@ -374,7 +374,7 @@ bool Freenect2DeviceImpl::open()
 
   if(max_iso_packet_size < 0x8400)
   {
-    std::cout << "[Freenect2DeviceImpl] max iso packet size for endpoint 0x84 too small! (expected: " << 0x8400 << " got: " << max_iso_packet_size << ")" << std::endl;
+    std::cout << "[Freenect2DeviceImpl] max iso packet size for endpoint 0x84 too small! (expected: " << 0x8400 << " got: " << max_iso_packet_size << "). Are you using the correct libusbx version with the superspeed patch?" << std::endl;
     return false;
   }
 
