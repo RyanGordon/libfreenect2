@@ -243,7 +243,7 @@ public:
     libusb_free_device_list(device_list, 0);
     has_device_enumeration_ = true;
 
-    std::cout << "[Freenect2Impl] found " << enumerated_devices_.size() << " devices" << std::endl;
+    std::cout << "[Freenect2Impl] found " << enumerated_devices_.size() << " kinect device(s)" << std::endl;
   }
 
   int getNumDevices()
@@ -586,30 +586,48 @@ Freenect2Device *Freenect2::openDevice(int idx)
     }
     else
     {
+      std::cout << "[Freenect2Device] Opening device: " << idx << std::endl;
       int r = libusb_open(dev, &dev_handle);
-      // TODO: error handling
 
-      device = new Freenect2DeviceImpl(impl_, dev, dev_handle);
-      impl_->addDevice(device);
-
-      if(device->open())
+      if(r != 0)
       {
-        return device;
+        std::cout << "[Freenect2Device] Unable to open device: " << r << std::endl;
       }
       else
       {
-        std::cout << "[Freenect2DeviceImpl] Unable to open device: " << idx << std::endl;
-        delete device;
+        std::cout << "[Freenect2Device] Resetting / Reopening device: " << idx << std::endl;
+        libusb_reset_device(dev_handle);
+        libusb_close(dev_handle);
 
-        // TODO: error handling
-        return 0;
+        r = libusb_open(dev, &dev_handle);
+
+        if(r != 0)
+        {
+          std::cout << "[Freenect2Device] Unable to open device after resetting: " << r << std::endl;
+        }
+        else
+        {
+          device = new Freenect2DeviceImpl(impl_, dev, dev_handle);
+          impl_->addDevice(device);
+
+          if(device->open())
+          {
+            return device;
+          }
+          else
+          {
+            std::cout << "[Freenect2DeviceImpl] Unable to open device: " << idx << std::endl;
+            delete device;
+
+            return 0;
+          }
+        }
       }
     }
   }
   else
   {
-    std::cout << "[Freenect2DeviceImpl] Requested device " << idx << " is not connected!" << std::endl;
-    // TODO: error handling
+    std::cout << "[Freenect2Device] Requested device " << idx << " is not connected!" << std::endl;
     return 0;
   }
 }

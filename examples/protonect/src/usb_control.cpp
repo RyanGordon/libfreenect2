@@ -160,12 +160,14 @@ UsbControl::ResultCode UsbControl::setConfiguration()
   int r;
 
   r = libusb_get_configuration(handle_, &current_config_id);
+  std::cout << "[UsbControl::setConfiguration] Active configuration: " << current_config_id << std::endl;
   code = checkLibusbResult("setConfiguration(initial get)", r);
 
   if(code == Success)
   {
     if(current_config_id != desired_config_id)
     {
+      std::cout << "[UsbControl::setConfiguration] Setting configuration: " << desired_config_id << std::endl;
       r = libusb_set_configuration(handle_, desired_config_id);
       code = checkLibusbResult("setConfiguration(set)", r);
     }
@@ -179,11 +181,13 @@ UsbControl::ResultCode UsbControl::claimInterfaces()
   UsbControl::ResultCode code = Success;
   int r;
 
+  std::cout << "[UsbControl::claimInterfaces] Claiming Control and RGB Interface (" << ControlAndRgbInterfaceId << ")" << std::endl;
   r = libusb_claim_interface(handle_, ControlAndRgbInterfaceId);
   code = checkLibusbResult("claimInterfaces(ControlAndRgbInterfaceId)", r);
 
   if(code == Success)
   {
+    std::cout << "[UsbControl::claimInterfaces] Claiming IR Interface (" << IrInterfaceId << ")" << std::endl;
     r = libusb_claim_interface(handle_, IrInterfaceId);
     code = checkLibusbResult("claimInterfaces(IrInterfaceId)", r);
   }
@@ -196,11 +200,13 @@ UsbControl::ResultCode UsbControl::releaseInterfaces()
   UsbControl::ResultCode code = Success;
   int r;
 
+  std::cout << "[UsbControl::releaseInterfaces] Releasing Control and RGB Interface (" << ControlAndRgbInterfaceId << ")" << std::endl;
   r = libusb_release_interface(handle_, ControlAndRgbInterfaceId);
   code = checkLibusbResult("releaseInterfaces(ControlAndRgbInterfaceId)", r);
 
   if(code == Success)
   {
+    std::cout << "[UsbControl::releaseInterfaces] Releaseing IR Interface (" << IrInterfaceId << ")" << std::endl;
     r = libusb_release_interface(handle_, IrInterfaceId);
     code = checkLibusbResult("releaseInterfaces(IrInterfaceId)", r);
   }
@@ -210,6 +216,7 @@ UsbControl::ResultCode UsbControl::releaseInterfaces()
 
 UsbControl::ResultCode UsbControl::setIsochronousDelay()
 {
+  std::cout << "[UsbControl::setIsochronousDelay] Setting delay" << std::endl;
   int r = libusb_ext::set_isochronous_delay(handle_, timeout_);
 
   return checkLibusbResult("setIsochronousDelay", r);
@@ -217,6 +224,7 @@ UsbControl::ResultCode UsbControl::setIsochronousDelay()
 
 UsbControl::ResultCode UsbControl::setPowerStateLatencies()
 {
+  std::cout << "[UsbControl::setPowerStateLatencies] Setting latencies" << std::endl;
   int r = libusb_ext::set_sel(handle_, timeout_, 0x55, 0, 0x55, 0);
 
   return checkLibusbResult("setPowerStateLatencies", r);
@@ -227,11 +235,13 @@ UsbControl::ResultCode UsbControl::enablePowerStates()
   UsbControl::ResultCode code;
   int r;
 
+  std::cout << "[UsbControl::enablePowerStates] Enabling u1" << std::endl;
   r = libusb_ext::set_feature(handle_, timeout_, libusb_ext::U1_ENABLE);
   code = checkLibusbResult("enablePowerStates(U1)", r);
 
   if(code == Success)
   {
+    std::cout << "[UsbControl::enablePowerStates] Enabling u2" << std::endl;
     r = libusb_ext::set_feature(handle_, timeout_, libusb_ext::U2_ENABLE);
     code = checkLibusbResult("enablePowerStates(U2)", r);
   }
@@ -242,6 +252,7 @@ UsbControl::ResultCode UsbControl::enablePowerStates()
 UsbControl::ResultCode UsbControl::setVideoTransferFunctionState(UsbControl::State state)
 {
   bool suspend = state == Enabled ? false : true;
+  std::cout << "[UsbControl::setVideoTransferFunctionState] Setting suspend state to: " << suspend << std::endl;
   int r = libusb_ext::set_feature_function_suspend(handle_, timeout_, suspend, suspend);
 
   return checkLibusbResult("setVideoTransferFunctionState", r);
@@ -250,6 +261,7 @@ UsbControl::ResultCode UsbControl::setVideoTransferFunctionState(UsbControl::Sta
 UsbControl::ResultCode UsbControl::setIrInterfaceState(UsbControl::State state)
 {
   int alternate_setting = state == Enabled ? 1 : 0;
+  std::cout << "[UsbControl::setIrInterfaceState] Setting stream status: " << alternate_setting << std::endl;
   int r = libusb_set_interface_alt_setting(handle_, IrInterfaceId, alternate_setting);
 
   return checkLibusbResult("setIrInterfaceState", r);
