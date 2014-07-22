@@ -92,6 +92,7 @@ public:
 
   // enable/disable 2. Interface using alternate setting
   ResultCode setIrInterfaceState(State state);
+  void printVersion();
 
 private:
   static const int ControlAndRgbInterfaceId = 0;

@@ -350,6 +350,8 @@ void Freenect2DeviceImpl::setIrAndDepthFrameListener(libfreenect2::FrameListener
 
 bool Freenect2DeviceImpl::open()
 {
+  usb_control_.printVersion();
+
   std::cout << "[Freenect2DeviceImpl] opening..." << std::endl;
 
   if(state_ != Created) return false;
@@ -364,6 +366,9 @@ bool Freenect2DeviceImpl::open()
   if(usb_control_.setIrInterfaceState(UsbControl::Disabled) != UsbControl::Success) return false;
   if(usb_control_.enablePowerStates() != UsbControl::Success) return false;
   if(usb_control_.setVideoTransferFunctionState(UsbControl::Disabled) != UsbControl::Success) return false;
+
+  int r = libusb_get_device_speed(usb_device_);
+  std::cout << "[Freenect2DeviceImpl] Speed: " << r << std::endl;
 
   size_t max_iso_packet_size = libusb_get_max_iso_packet_size(usb_device_, 0x84);
 

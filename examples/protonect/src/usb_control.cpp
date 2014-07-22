@@ -77,6 +77,7 @@ namespace libusb_ext
     uint16_t wLength = 0;
     uint8_t *data    = 0;
 
+    std::cout << "[libusb_ext::set_isochronous_delay] libusb_control_transfer: (bmRequestType: " << bmRequestType << ", bRequest: " << bRequest << ", wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
     return libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
   }
 
@@ -89,8 +90,9 @@ namespace libusb_ext
     uint16_t wValue  = 0;
     uint16_t wIndex  = 0;
     uint16_t wLength = 6;
-    unsigned char data[6]   = { u1sel, u1pel, u2sel, u2pel, 0, 0 };
+    unsigned char data[]   = { u1sel, u1pel, u2sel, u2pel, 0x00, 0x00 };
 
+    std::cout << "[libusb_ext::set_sel] libusb_control_transfer: (bmRequestType: " << bmRequestType << ", bRequest: " << bRequest << ", wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
     return libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
   }
 
@@ -106,6 +108,7 @@ namespace libusb_ext
     uint16_t wLength = 0;
     uint8_t *data    = 0;
 
+    std::cout << "[libusb_ext::set_feature] libusb_control_transfer: (bmRequestType: " << bmRequestType << ", bRequest: " << bRequest << ", wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
     return libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
   }
 
@@ -125,6 +128,7 @@ namespace libusb_ext
     uint16_t wLength = 0;
     uint8_t *data    = 0;
 
+    std::cout << "[libusb_ext::set_feature_function_suspend] libusb_control_transfer: (bmRequestType: " << bmRequestType << ", bRequest: " << bRequest << ", wValue: " << wValue << ", wIndex: " << wIndex << ", wLength: " << wLength << ", timeout: " << timeout << ")" << std::endl;
     return libusb_control_transfer(handle, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
   }
 }
@@ -225,7 +229,7 @@ UsbControl::ResultCode UsbControl::setIsochronousDelay()
 UsbControl::ResultCode UsbControl::setPowerStateLatencies()
 {
   std::cout << "[UsbControl::setPowerStateLatencies] Setting latencies (sel u1/u2)" << std::endl;
-  int r = libusb_ext::set_sel(handle_, timeout_, 0x55, 0, 0x55, 0);
+  int r = libusb_ext::set_sel(handle_, timeout_, 0x55, 0x00, 0x55, 0x00);
 
   return checkLibusbResult("setPowerStateLatencies", r);
 }
@@ -265,6 +269,13 @@ UsbControl::ResultCode UsbControl::setIrInterfaceState(UsbControl::State state)
   int r = libusb_set_interface_alt_setting(handle_, IrInterfaceId, alternate_setting);
 
   return checkLibusbResult("setIrInterfaceState", r);
+}
+
+void UsbControl::printVersion()
+{
+  const struct libusb_version* version;
+  version = libusb_get_version();
+  printf("[UsbControl::printVersion] Using libusbx v%d.%d.%d.%d\n", version->major, version->minor, version->micro, version->nano);
 }
 
 } /* namespace protocol */
