@@ -436,7 +436,8 @@ bool Freenect2DeviceImpl::open()
   int r = libusb_get_device_speed(usb_device_);
   std::cout << "[Freenect2DeviceImpl] Speed: " << r << std::endl;
 
-  size_t max_iso_packet_size = libusb_get_max_iso_packet_size(usb_device_, 0x84);
+  int max_iso_packet_size;
+  if(usb_control_.getIrMaxIsoPacketSize(max_iso_packet_size) != UsbControl::Success) return false;
 
   if(max_iso_packet_size < 0x8400)
   {
