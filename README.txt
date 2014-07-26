@@ -17,13 +17,13 @@ Watch the OpenKinect wiki at www.openkinect.org and the mailing list at https://
 
 === Installation
 
-This project uses the libusbx drivers and API. Setting things up varies by platform.
+This project uses the libusb drivers and API. Setting things up varies by platform.
 
 ==== Windows
 
 If you have the Kinect for Windows v2 SDK, install it first. You don't need to uninstall the SDK or the driver before doing this procedure.
 
-Install the libusbK backend driver for libusbx:
+Install the libusbK backend driver for libusb:
 
 1. Download Zadig from http://zadig.akeo.ie/.
 2. Run Zadig and in options, check List All Devices and uncheck Ignore Hubs or Composite Parents
@@ -52,7 +52,7 @@ You can go back and forth between the SDK driver and the libusbK driver very qui
 
 brew update
 brew tap homebrew/science
-brew install opencv git
+brew install wget autoconf automake libtool git opencv
 
 3. Download the libfreenect2 repository
 
@@ -74,7 +74,7 @@ make && make install
 
 ==== Other operating systems
 
-I'm not sure, but look for libusbx installation instructions for your OS. Figure out how to attach the driver to the Xbox NUI Sensor composite parent device, VID 045E PID 02C4, then contribute your procedure.
+I'm not sure, but look for libusb installation instructions for your OS. Figure out how to attach the driver to the Xbox NUI Sensor composite parent device, VID 045E PID 02C4, then contribute your procedure.
 
 === Building
 
