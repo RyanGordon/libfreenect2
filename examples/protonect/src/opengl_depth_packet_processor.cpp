@@ -332,10 +332,10 @@ struct OpenGLDepthPacketProcessorImpl
 
   GLuint square_vbo, square_vao, stage1_framebuffer, filter1_framebuffer, stage2_framebuffer, filter2_framebuffer;
   Texture<S16C1> lut11to16;
-  Texture<U16C1> p0table[3];
+  Texture<F32C1> p0table[3];
   Texture<F32C1> x_table, z_table;
 
-  Texture<U16C1> input_data;
+  Texture<F32C1> input_data;
 
   Texture<F32C4> stage1_debug;
   Texture<F32C3> stage1_data[3];

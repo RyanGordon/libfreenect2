@@ -34,11 +34,11 @@ struct Parameters
   float max_depth;
 };
 
-uniform usampler2DRect P0Table0;
-uniform usampler2DRect P0Table1;
-uniform usampler2DRect P0Table2;
+uniform sampler2DRect P0Table0;
+uniform sampler2DRect P0Table1;
+uniform sampler2DRect P0Table2;
 uniform isampler2DRect Lut11to16;
-uniform usampler2DRect Data;
+uniform sampler2DRect Data;
 uniform sampler2DRect ZTable;
 
 uniform Parameters Params;
@@ -81,7 +81,7 @@ float decode_data(ivec2 uv, int sub)
   return float(texelFetch(Lut11to16, ivec2(int(lut_idx), 0)).x);
 }
 
-vec2 processMeasurementTriple(in ivec2 uv, in usampler2DRect p0table, in int offset, in float ab_multiplier_per_frq, inout bool saturated)
+vec2 processMeasurementTriple(in ivec2 uv, in sampler2DRect p0table, in int offset, in float ab_multiplier_per_frq, inout bool saturated)
 {
   float p0 = -float(texelFetch(p0table, uv).x) * 0.000031 * M_PI;
   
@@ -117,5 +117,15 @@ void main(void)
   
   Infrared = min(dot(mix(Norm, vec3(65535.0), saturated), vec3(0.333333333  * Params.ab_multiplier * Params.ab_output_multiplier)), 65535.0);
   
-  Debug = vec4(sqrt(vec3(Infrared / 65535.0)), 1.0);
+  //Debug = vec4(0.0, 0.0, 1.0, 1.0);
+  //Debug = vec4(vec3(texelFetch(P0Table1, uv).x * 100.0), 1.0);
+  //Debug = vec4(vec3(texelFetch(Data, uv).x), 1.0);
+  //Debug = vec4(vec3(texelFetch(ZTable, uv).x), 1.0);
+  //Debug = vec4(sqrt(vec3(Infrared / 65535.0)), 1.0);
+
+  if (decode_data(uv, 6) < 0.0) {
+    Debug = vec4(0.0, 0.0, 1.0, 1.0);
+  } else {
+    Debug = vec4(0.0, 1.0, 1.0, 1.0);
+  }
 }
