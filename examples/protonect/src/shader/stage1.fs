@@ -126,6 +126,6 @@ void main(void)
   if (decode_data(uv, 6) < 0.0) {
     Debug = vec4(0.0, 0.0, 1.0, 1.0);
   } else {
-    Debug = vec4(0.0, 1.0, 1.0, 1.0);
+    Debug = vec4(1.0, 1.0, 1.0, 1.0);
   }
 }
