@@ -802,6 +802,36 @@ void OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* 
   size_t n = 512 * 424;
   libfreenect2::protocol::P0TablesResponse* p0table = (libfreenect2::protocol::P0TablesResponse*)buffer;
 
+  // Loop through each element and cast to a float before passing it into opengl
+  float *p0table0 = new float[n];
+  float *p0table1 = new float[n];
+  float *p0table2 = new float[n];
+
+  // Step through each element of integer array, and cast into float array
+  for(int i = 0; i < n; i++) {
+      p0table0[i] = (float)p0table->p0table0[i];
+      p0table1[i] = (float)p0table->p0table1[i];
+      p0table2[i] = (float)p0table->p0table2[i];
+  }
+
+  std::cout << "p0table0 debug data dump:" << std::endl;
+  for(int i = 0; i < n; i++) {
+    std::cout << p0table0[i] << " ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "p0table1 debug data dump:" << std::endl;
+  for(int i = 0; i < n; i++) {
+    std::cout << p0table1[i] << " ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "p0table2 debug data dump:" << std::endl;
+  for(int i = 0; i < n; i++) {
+    std::cout << p0table2[i] << " ";
+  }
+  std::cout << std::endl;
+
   if(!impl_->p0table[0].allocate(512, 424))
   {
     std::cerr << "[OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse] Failed to allocate p0table[0]!" << std::endl;
@@ -824,7 +854,7 @@ void OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* 
     std::cerr << "[OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse] Failed to upload p0table[1]!" << std::endl;
   }
 
-  if(impl_->p0table[2].allocate(512, 424))
+  if(!impl_->p0table[2].allocate(512, 424))
   {
     std::cerr << "[OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse] Failed to allocate p0table[2]!" << std::endl;
   }
