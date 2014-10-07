@@ -335,7 +335,7 @@ struct OpenGLDepthPacketProcessorImpl
   Texture<F32C1> p0table[3];
   Texture<F32C1> x_table, z_table;
 
-  Texture<F32C1> input_data;
+  Texture<U16C1> input_data;
 
   Texture<F32C4> stage1_debug;
   Texture<F32C3> stage1_data[3];
@@ -836,7 +836,7 @@ void OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* 
   {
     std::cerr << "[OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse] Failed to allocate p0table[0]!" << std::endl;
   }
-  std::copy(reinterpret_cast<unsigned char*>(p0table->p0table0), reinterpret_cast<unsigned char*>(p0table->p0table0 + n), impl_->p0table[0].data);
+  std::copy(reinterpret_cast<unsigned char*>(p0table0), reinterpret_cast<unsigned char*>(p0table0 + n), impl_->p0table[0].data);
   impl_->p0table[0].flipY();
   if(!impl_->p0table[0].upload())
   {
@@ -847,7 +847,7 @@ void OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* 
   {
     std::cerr << "[OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse] Failed to allocate p0table[1]!" << std::endl;
   }
-  std::copy(reinterpret_cast<unsigned char*>(p0table->p0table1), reinterpret_cast<unsigned char*>(p0table->p0table1 + n), impl_->p0table[1].data);
+  std::copy(reinterpret_cast<unsigned char*>(p0table1), reinterpret_cast<unsigned char*>(p0table1 + n), impl_->p0table[1].data);
   impl_->p0table[1].flipY();
   if(!impl_->p0table[1].upload())
   {
@@ -858,7 +858,7 @@ void OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* 
   {
     std::cerr << "[OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse] Failed to allocate p0table[2]!" << std::endl;
   }
-  std::copy(reinterpret_cast<unsigned char*>(p0table->p0table2), reinterpret_cast<unsigned char*>(p0table->p0table2 + n), impl_->p0table[2].data);
+  std::copy(reinterpret_cast<unsigned char*>(p0table2), reinterpret_cast<unsigned char*>(p0table2 + n), impl_->p0table[2].data);
   impl_->p0table[2].flipY();
   if(!impl_->p0table[2].upload())
   {

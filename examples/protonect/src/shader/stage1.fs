@@ -38,7 +38,7 @@ uniform sampler2DRect P0Table0;
 uniform sampler2DRect P0Table1;
 uniform sampler2DRect P0Table2;
 uniform isampler2DRect Lut11to16;
-uniform sampler2DRect Data;
+uniform usampler2DRect Data;
 uniform sampler2DRect ZTable;
 
 uniform Parameters Params;
@@ -118,7 +118,7 @@ void main(void)
   Infrared = min(dot(mix(Norm, vec3(65535.0), saturated), vec3(0.333333333  * Params.ab_multiplier * Params.ab_output_multiplier)), 65535.0);
   
   //Debug = vec4(0.0, 0.0, 1.0, 1.0);
-  Debug = vec4(vec3(texelFetch(P0Table2, uv).x / 65535.0), 1.0);
+  Debug = vec4(vec3(texelFetch(P0Table0, uv).x / 65535.0), 1.0);
   //Debug = vec4(vec3(texelFetch(Data, uv).x), 1.0);
   //Debug = vec4(vec3(texelFetch(ZTable, uv).x), 1.0);
   //Debug = vec4(sqrt(vec3(Infrared / 65535.0)), 1.0);
