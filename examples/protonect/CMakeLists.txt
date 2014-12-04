@@ -3,6 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(libfreenect2)
 SET(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+set(ENABLE_TEGRA_JPEG ON)
 
 SET(MY_DIR ${libfreenect2_SOURCE_DIR})
 SET(DEPENDS_DIR "${libfreenect2_SOURCE_DIR}/../../depends")
@@ -24,7 +25,7 @@ SET(LIBRARY_OUTPUT_PATH ${MY_DIR}/lib)
 
 # dependencies
 FIND_PACKAGE(OpenCV REQUIRED)
-find_library(OPENCL_LIBRARIES OpenCL)
+#find_library(OPENCL_LIBRARIES OpenCL)
 
 # OpenCV
 INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIR})
@@ -35,11 +36,11 @@ LINK_DIRECTORIES("${DEPENDS_DIR}/libusb/lib/")
 
 # GLEW
 INCLUDE_DIRECTORIES("${DEPENDS_DIR}/glew/include/")
-if (APPLE)
+#if (APPLE)
   LINK_DIRECTORIES("${DEPENDS_DIR}/glew/lib/")
-else()
-  LINK_DIRECTORIES("${DEPENDS_DIR}/glew/lib64/")
-endif()
+#else()
+#  LINK_DIRECTORIES("${DEPENDS_DIR}/glew/lib64/")
+#endif()
 ADD_DEFINITIONS(-DGLEW_MX -DGLEW_STATIC)
 
 # GLFW
@@ -57,6 +58,16 @@ if(APPLE)
   LINK_DIRECTORIES("${DEPENDS_DIR}/libjpeg_turbo/lib/")
 endif()
 
+# Tegra libjpeg
+SET(JPEG_RGB_PACKET_PROCESSOR_SOURCE src/turbo_jpeg_rgb_packet_processor.cpp)
+find_library(TEGRA_JPEG_LIBRARY jpeg PATHS /usr/lib/arm-linux-gnueabihf/tegra)
+IF(TEGRA_JPEG_LIBRARY AND ENABLE_TEGRA_JPEG)
+  MESSAGE(STATUS "Found Tegra hardware accelerated JPEG support")
+  SET(JPEG_RGB_PACKET_PROCESSOR_SOURCE src/tegra_jpeg_rgb_packet_processor.cpp)
+  add_definitions(-DHAVE_TEGRA_JPEG)
+  INCLUDE_DIRECTORIES("${DEPENDS_DIR}/nv_headers")
+ENDIF()
+
 # Display additional files in qtcreator
 execute_process(COMMAND find ${PROJECT_SOURCE_DIR} -type f -name "*.*" OUTPUT_VARIABLE FILES_ALL_STRING)
 string(REPLACE "\n" ";" FILES_ALL_LIST ${FILES_ALL_STRING})
@@ -73,9 +84,9 @@ GENERATE_RESOURCES(${RESOURCES_INC_FILE} ${MY_DIR}
   src/shader/filter2.fs
   src/shader/stage1.fs
   src/shader/stage2.fs
-  src/opencl_depth_packet_processor.cl
+#  src/opencl_depth_packet_processor.cl
 )
-add_definitions(-DREG_OPENCL_FILE="src/opencl_depth_packet_processor.cl")
+#add_definitions(-DREG_OPENCL_FILE="src/opencl_depth_packet_processor.cl")
 
 INCLUDE_DIRECTORIES("${MY_DIR}/include")
 
@@ -90,13 +101,13 @@ ADD_LIBRARY(freenect2 SHARED
   
   src/rgb_packet_stream_parser.cpp
   src/rgb_packet_processor.cpp
-  src/turbo_jpeg_rgb_packet_processor.cpp
+  ${JPEG_RGB_PACKET_PROCESSOR_SOURCE}
   
   src/depth_packet_stream_parser.cpp
   src/depth_packet_processor.cpp
   src/cpu_depth_packet_processor.cpp
   src/opengl_depth_packet_processor.cpp
-  src/opencl_depth_packet_processor.cpp
+#  src/opencl_depth_packet_processor.cpp
   src/resource.cpp
   
   src/usb_control.cpp
@@ -114,7 +125,7 @@ TARGET_LINK_LIBRARIES(freenect2
   GLEWmx
   glfw
   ${GLFW_LIBRARIES}
-  ${OPENCL_LIBRARIES}
+#  ${OPENCL_LIBRARIES}
 )
 
 ADD_EXECUTABLE(test_opengl

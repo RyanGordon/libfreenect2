@@ -72,11 +72,15 @@ private:
   CommandTransaction command_tx_;
   int command_seq_;
 
+#ifndef HAVE_TEGRA_JPEG
   TurboJpegRgbPacketProcessor rgb_packet_processor_;
-  OpenCLDepthPacketProcessor depth_packet_processor_;
+#else
+  TegraJpegRgbPacketProcessor rgb_packet_processor_;
+#endif
+  //CpuDepthPacketProcessor depth_packet_processor_;
 
   RgbPacketStreamParser rgb_packet_parser_;
-  DepthPacketStreamParser depth_packet_parser_;
+  //DepthPacketStreamParser depth_packet_parser_;
 
   std::string serial_, firmware_;
   Freenect2Device::IrCameraParams ir_camera_params_;
@@ -330,18 +334,18 @@ Freenect2DeviceImpl::Freenect2DeviceImpl(Freenect2Impl *context, libusb_device *
   command_tx_(usb_device_handle_, 0x81, 0x02),
   command_seq_(0),
   rgb_packet_processor_(),
-  depth_packet_processor_(),
+  //depth_packet_processor_(),
   rgb_packet_parser_(&rgb_packet_processor_),
-  depth_packet_parser_(&depth_packet_processor_),
+  //depth_packet_parser_(&depth_packet_processor_),
   serial_(serial),
   firmware_("<unknown>")
 {
   rgb_transfer_pool_.setCallback(&rgb_packet_parser_);
-  ir_transfer_pool_.setCallback(&depth_packet_parser_);
+  //ir_transfer_pool_.setCallback(&depth_packet_parser_);
 
-  depth_packet_processor_.load11To16LutFromFile("11to16.bin");
-  depth_packet_processor_.loadXTableFromFile("xTable.bin");
-  depth_packet_processor_.loadZTableFromFile("zTable.bin");
+  //depth_packet_processor_.load11To16LutFromFile("11to16.bin");
+  //depth_packet_processor_.loadXTableFromFile("xTable.bin");
+  //depth_packet_processor_.loadZTableFromFile("zTable.bin");
 }
 
 Freenect2DeviceImpl::~Freenect2DeviceImpl()
@@ -402,7 +406,7 @@ void Freenect2DeviceImpl::setColorFrameListener(libfreenect2::FrameListener* rgb
 void Freenect2DeviceImpl::setIrAndDepthFrameListener(libfreenect2::FrameListener* ir_frame_listener)
 {
   // TODO: should only be possible, if not started
-  depth_packet_processor_.setFrameListener(ir_frame_listener);
+  //depth_packet_processor_.setFrameListener(ir_frame_listener);
 }
 
 bool Freenect2DeviceImpl::open()
@@ -479,7 +483,7 @@ void Freenect2DeviceImpl::start()
   ir_camera_params_.p2 = ir_p->p2;
 
   command_tx_.execute(ReadP0TablesCommand(nextCommandSeq()), result);
-  depth_packet_processor_.loadP0TablesFromCommandResponse(result.data, result.length);
+  //depth_packet_processor_.loadP0TablesFromCommandResponse(result.data, result.length);
 
   command_tx_.execute(ReadRgbCameraParametersCommand(nextCommandSeq()), result);
   RgbCameraParamsResponse *rgb_p = reinterpret_cast<RgbCameraParamsResponse *>(result.data);
@@ -582,7 +586,7 @@ void Freenect2DeviceImpl::close()
   }
 
   rgb_packet_processor_.setFrameListener(0);
-  depth_packet_processor_.setFrameListener(0);
+  //depth_packet_processor_.setFrameListener(0);
 
   if(has_usb_interfaces_)
   {
