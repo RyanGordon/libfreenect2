@@ -287,11 +287,11 @@ struct OpenGLDepthPacketProcessorImpl
   libfreenect2::DepthPacketProcessor::Config config;
 
   GLuint square_vbo, square_vao, stage1_framebuffer, filter1_framebuffer, stage2_framebuffer, filter2_framebuffer;
-  Texture<S16C1> lut11to16;
-  Texture<U16C1> p0table[3];
+  Texture<F32C1> lut11to16;
+  Texture<F32C1> p0table[3];
   Texture<F32C1> x_table, z_table;
 
-  Texture<U16C1> input_data;
+  Texture<F32C1> input_data;
 
   Texture<F32C4> stage1_debug;
   Texture<F32C3> stage1_data[3];
@@ -707,18 +707,37 @@ void OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* 
   size_t n = 512 * 424;
   libfreenect2::protocol::P0TablesResponse* p0table = (libfreenect2::protocol::P0TablesResponse*)buffer;
 
+  uint16_t p0table0[n];
+  uint16_t p0table1[n];
+  uint16_t p0table2[n];
+
+  std::copy(reinterpret_cast<unsigned char*>(p0table->p0table0), reinterpret_cast<unsigned char*>(p0table->p0table0 + n), reinterpret_cast<unsigned char*>(p0table0));
+  std::copy(reinterpret_cast<unsigned char*>(p0table->p0table1), reinterpret_cast<unsigned char*>(p0table->p0table1 + n), reinterpret_cast<unsigned char*>(p0table1));
+  std::copy(reinterpret_cast<unsigned char*>(p0table->p0table2), reinterpret_cast<unsigned char*>(p0table->p0table2 + n), reinterpret_cast<unsigned char*>(p0table2));
+
+  float *p0table0float = new float[n];
+  float *p0table1float = new float[n];
+  float *p0table2float = new float[n];
+
+  // Step through each element of integer array, and cast into float array
+  for(int i = 0; i < n; i++) {
+    p0table0float[i] = (float)p0table0[i];
+    p0table1float[i] = (float)p0table1[i];
+    p0table2float[i] = (float)p0table2[i];
+  }
+
   impl_->p0table[0].allocate(512, 424);
-  std::copy(reinterpret_cast<unsigned char*>(p0table->p0table0), reinterpret_cast<unsigned char*>(p0table->p0table0 + n), impl_->p0table[0].data);
+  std::copy(reinterpret_cast<unsigned char*>(p0table0float), reinterpret_cast<unsigned char*>(p0table0float + n), impl_->p0table[0].data);
   impl_->p0table[0].flipY();
   impl_->p0table[0].upload();
 
   impl_->p0table[1].allocate(512, 424);
-  std::copy(reinterpret_cast<unsigned char*>(p0table->p0table1), reinterpret_cast<unsigned char*>(p0table->p0table1 + n), impl_->p0table[1].data);
+  std::copy(reinterpret_cast<unsigned char*>(p0table1float), reinterpret_cast<unsigned char*>(p0table1float + n), impl_->p0table[1].data);
   impl_->p0table[1].flipY();
   impl_->p0table[1].upload();
 
   impl_->p0table[2].allocate(512, 424);
-  std::copy(reinterpret_cast<unsigned char*>(p0table->p0table2), reinterpret_cast<unsigned char*>(p0table->p0table2 + n), impl_->p0table[2].data);
+  std::copy(reinterpret_cast<unsigned char*>(p0table2float), reinterpret_cast<unsigned char*>(p0table2float + n), impl_->p0table[2].data);
   impl_->p0table[2].flipY();
   impl_->p0table[2].upload();
 
@@ -802,14 +821,21 @@ void OpenGLDepthPacketProcessor::load11To16LutFromFile(const char* filename)
 {
   ChangeCurrentOpenGLContext ctx(*impl_->opengl_context_ptr);
 
-  impl_->lut11to16.allocate(2048, 1);
+  size_t n = 2048;
+  impl_->lut11to16.allocate(n, 1);
 
   const unsigned char *data;
+  int16_t lut11to16[2048];
+  float *lut11to16float = new float[n];
   size_t length;
 
   if(loadResource("11to16.bin", &data, &length))
   {
-    std::copy(data, data + length, impl_->lut11to16.data);
+    std::copy(data, data + length, reinterpret_cast<unsigned char*>(lut11to16));
+    for(int i = 0; i < n; i++) {
+      lut11to16float[i] = (float)lut11to16[i];
+    }
+    std::copy(lut11to16float, lut11to16float + n, impl_->lut11to16.data);
     impl_->lut11to16.upload();
   }
   else
@@ -827,7 +853,18 @@ void OpenGLDepthPacketProcessor::process(const DepthPacket &packet)
 
   impl_->opengl_context_ptr->makeCurrent();
 
-  std::copy(packet.buffer, packet.buffer + packet.buffer_length, impl_->input_data.data);
+  size_t n = 352 * 424 * 10;
+  uint16_t *packet_data = new uint16_t[n];
+
+  std::copy(packet.buffer, packet.buffer + packet.buffer_length, reinterpret_cast<unsigned char*>(packet_data));
+
+  float *packet_data_float = new float[n];
+  for(int i = 0; i < n; i++) {
+    packet_data_float[i] = (float)packet_data[i];
+    //std::cerr << i << " " << packet_data[i] << std::endl;
+  }
+
+  std::copy(packet_data_float, packet_data_float + n, impl_->input_data.data);
   impl_->input_data.upload();
   impl_->run(has_listener ? &ir : 0, has_listener ? &depth : 0);
 

@@ -87,7 +87,7 @@ protected:
   bool debug_;
   virtual DepthPacketProcessor *createDepthPacketProcessor();
 public:
-  OpenGLPacketPipeline(bool debug = false);
+  OpenGLPacketPipeline(bool debug = true);
   virtual ~OpenGLPacketPipeline();
 };
 

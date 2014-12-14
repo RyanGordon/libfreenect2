@@ -145,7 +145,7 @@ void main(void)
   float depth_linear = zmultiplier * phase_final;
   float max_depth = phase_final * Params.unambigious_dist * 2.0;
 
-  bool cond1 = /*(modeMask & 32) != 0*/ true && 0.0 < depth_linear && 0.0 < max_depth;
+  bool cond1 = true && 0.0 < depth_linear && 0.0 < max_depth;
 
   xmultiplier = (xmultiplier * 90.0) / (max_depth * max_depth * 8192.0);
 
@@ -155,5 +155,12 @@ void main(void)
   Depth = cond1 ? depth_fit : depth_linear; // r1.y -> later r2.z
   DepthAndIrSum = vec2(Depth, ir_sum);
   
-  Debug = vec4(vec3(Depth / Params.max_depth), 1.0);
+  //Debug = vec4(vec3(Depth / Params.max_depth), 1.0);
+  if (A.x > 0.0) {
+    Debug = vec4(0.0, 0.0, 1.0, 1.0); // blue
+  } else if (A.x < 0.0) {
+    Debug = vec4(1.0, 1.0, 0.0, 1.0); // yellow
+  } else {
+    Debug = vec4(1.0, 0.0, 0.0, 1.0); // red
+  }
 }
