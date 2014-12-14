@@ -31,6 +31,7 @@
 #include <stdint.h>
 
 #include <libfreenect2/frame_listener.hpp>
+#include <libfreenect2/packet_processor.h>
 
 namespace libfreenect2
 {
@@ -42,7 +43,9 @@ struct DepthPacket
   size_t buffer_length;
 };
 
-class DepthPacketProcessor
+typedef PacketProcessor<DepthPacket> BaseDepthPacketProcessor;
+
+class DepthPacketProcessor : public BaseDepthPacketProcessor
 {
 public:
   struct Config
@@ -97,10 +100,8 @@ public:
 
   virtual void setFrameListener(libfreenect2::FrameListener *listener);
   virtual void setConfiguration(const libfreenect2::DepthPacketProcessor::Config &config);
-  virtual void process(const DepthPacket &packet) = 0;
 
   virtual void loadP0TablesFromCommandResponse(unsigned char* buffer, size_t buffer_length) = 0;
-
 protected:
   libfreenect2::DepthPacketProcessor::Config config_;
   libfreenect2::FrameListener *listener_;
@@ -111,7 +112,7 @@ class OpenGLDepthPacketProcessorImpl;
 class OpenGLDepthPacketProcessor : public DepthPacketProcessor
 {
 public:
-  OpenGLDepthPacketProcessor(void *parent_opengl_context_ptr);
+  OpenGLDepthPacketProcessor(void *parent_opengl_context_ptr, bool debug);
   virtual ~OpenGLDepthPacketProcessor();
   virtual void setConfiguration(const libfreenect2::DepthPacketProcessor::Config &config);
 
@@ -164,5 +165,32 @@ private:
   CpuDepthPacketProcessorImpl *impl_;
 };
 
+#ifdef WITH_OPENCL_SUPPORT
+class OpenCLDepthPacketProcessorImpl;
+
+class OpenCLDepthPacketProcessor : public DepthPacketProcessor
+{
+public:
+  OpenCLDepthPacketProcessor();
+  virtual ~OpenCLDepthPacketProcessor();
+  virtual void setConfiguration(const libfreenect2::DepthPacketProcessor::Config &config);
+
+  virtual void loadP0TablesFromCommandResponse(unsigned char* buffer, size_t buffer_length);
+
+  /**
+   * GUESS: the x and z table follow some polynomial, until we know the exact polynom formula and its coefficients
+   * just load them from a memory dump - although they probably vary per camera
+   */
+  void loadXTableFromFile(const char* filename);
+
+  void loadZTableFromFile(const char* filename);
+
+  void load11To16LutFromFile(const char* filename);
+
+  virtual void process(const DepthPacket &packet);
+private:
+  OpenCLDepthPacketProcessorImpl *impl_;
+};
+#endif // WITH_OPENCL_SUPPORT
 } /* namespace libfreenect2 */
 #endif /* DEPTH_PACKET_PROCESSOR_H_ */
