@@ -815,7 +815,7 @@ void OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* 
       p0table2[i] = (float)p0table->p0table2[i];
   }
 
-  std::cout << "p0table0 debug data dump:" << std::endl;
+  /*std::cout << "p0table0 debug data dump:" << std::endl;
   for(int i = 0; i < n; i++) {
     std::cout << p0table0[i] << " ";
   }
@@ -831,7 +831,7 @@ void OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* 
   for(int i = 0; i < n; i++) {
     std::cout << p0table2[i] << " ";
   }
-  std::cout << std::endl;
+  std::cout << std::endl;*/
 
   if(!impl_->p0table[0].allocate(512, 424))
   {

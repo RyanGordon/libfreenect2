@@ -164,10 +164,6 @@ ADD_EXECUTABLE(test_opengl_texture_formats
 TARGET_LINK_LIBRARIES(test_opengl_texture_formats
   freenect2
 )
-
-ADD_EXECUTABLE(test_opengl
-  src/test_opengl_depth_packet_processor.cpp
-)
   
 ADD_EXECUTABLE(Protonect
   Protonect.cpp
