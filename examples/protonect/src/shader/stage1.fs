@@ -117,21 +117,6 @@ void main(void)
   
   Infrared = min(dot(mix(Norm, vec3(65535.0), saturated), vec3(0.333333333  * Params.ab_multiplier * Params.ab_output_multiplier)), 65535.0);
   
-  if (valid_pixel) {
-    Debug = vec4(0.0, 0.0, 1.0, 1.0); // blue
-  } else {
-    Debug = vec4(1.0, 0.0, 0.0, 1.0); // red
-  }
-  //if (ir_sum > 0.0) {
-  //  Debug = vec4(0.0, 0.0, 1.0, 1.0); // blue
-  //} else if (ir_sum < 0.0) {
-  //  Debug = vec4(1.0, 1.0, 0.0, 1.0); // yellow
-  //} else {
-  //  Debug = vec4(1.0, 0.0, 0.0, 1.0); // red
-  //}
   //Debug = vec4(vec3(texelFetch(ZTable, uv).x / 8000.0), 1.0);
-  //Debug = vec4(sqrt(vec3(Infrared / 65535.0)), 1.0);
-  //Debug = vec4(0.0, 0.0, decode_data(uv, 3), 1.0);
-
-  //Infrared = texelFetch(ZTable, uv).x * 2;
+  Debug = vec4(sqrt(vec3(Infrared / 65535.0)), 1.0);
 }
