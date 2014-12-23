@@ -155,12 +155,12 @@ void main(void)
   Depth = cond1 ? depth_fit : depth_linear; // r1.y -> later r2.z
   DepthAndIrSum = vec2(Depth, ir_sum);
   
-  //Debug = vec4(vec3(Depth / Params.max_depth), 1.0);
-  if (A.x > 0.0) {
+  if (texelFetch(XTable, uv).x > 0.0) {
     Debug = vec4(0.0, 0.0, 1.0, 1.0); // blue
-  } else if (A.x < 0.0) {
+  } else if (texelFetch(XTable, uv).x < 0.0) {
     Debug = vec4(1.0, 1.0, 0.0, 1.0); // yellow
   } else {
     Debug = vec4(1.0, 0.0, 0.0, 1.0); // red
   }
+  Debug = vec4(vec3(abs(DepthAndIrSum.y)), 1.0);
 }

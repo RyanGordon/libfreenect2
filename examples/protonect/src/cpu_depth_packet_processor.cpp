@@ -62,7 +62,7 @@ inline int bfi(int width, int offset, int src2, int src3)
 class CpuDepthPacketProcessorImpl
 {
 public:
-  cv::Mat p0_table0, p0_table1, p0_table2, x_table, z_table;
+  cv::Mat p0_table0, p0_table1, p0_table2, x_table, z_table, ir_sum_mat;
 
   int16_t lut11to16[2048];
 
@@ -91,8 +91,8 @@ public:
     timing_acc_n = 0.0;
     timing_current_start = 0.0;
 
-    enable_bilateral_filter = true;
-    enable_edge_filter = true;
+    enable_bilateral_filter = false;
+    enable_edge_filter = false;
 
     flip_ptables = true;
   }
@@ -392,6 +392,8 @@ public:
 
     float ir_sum = m0[1] + m1[1] + m2[1];
 
+    int index = ((423 - y) * 512) + x;
+
     float phase;
     // if(DISABLE_DISAMBIGUATION)
     if(false)
@@ -638,6 +640,10 @@ void CpuDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* buf
     cv::flip(cv::Mat(424, 512, CV_16UC1, p0table->p0table1), impl_->p0_table1, 0);
     cv::flip(cv::Mat(424, 512, CV_16UC1, p0table->p0table2), impl_->p0_table2, 0);
 
+    cv::imshow("p0table0", impl_->p0_table0);
+    cv::imshow("p0table1", impl_->p0_table1);
+    cv::imshow("p0table2", impl_->p0_table2);
+
     impl_->fill_trig_tables(impl_->p0_table0, impl_->trig_table0);
     impl_->fill_trig_tables(impl_->p0_table1, impl_->trig_table1);
     impl_->fill_trig_tables(impl_->p0_table2, impl_->trig_table2);
@@ -696,6 +702,7 @@ void CpuDepthPacketProcessor::loadXTableFromFile(const char* filename)
   if(loadResource("xTable.bin", &data, &length))
   {
     std::copy(data, data + length, impl_->x_table.data);
+    cv::imshow("xtable", impl_->x_table / 8000.f);
   }
   else
   {
@@ -706,6 +713,7 @@ void CpuDepthPacketProcessor::loadXTableFromFile(const char* filename)
 void CpuDepthPacketProcessor::loadZTableFromFile(const char* filename)
 {
   impl_->z_table.create(424, 512, CV_32FC1);
+  impl_->ir_sum_mat.create(424, 512, CV_32FC1);
 
   const unsigned char *data;
   size_t length;
@@ -713,6 +721,7 @@ void CpuDepthPacketProcessor::loadZTableFromFile(const char* filename)
   if(loadResource("zTable.bin", &data, &length))
   {
     std::copy(data, data + length, impl_->z_table.data);
+    cv::imshow("ztable", impl_->z_table / 6000.f);
   }
   else
   {
@@ -745,11 +754,12 @@ void CpuDepthPacketProcessor::process(const DepthPacket &packet)
 
   float *m_ptr = m.ptr<float>();
 
-  for(int y = 0; y < 424; ++y)
+  for(int y = 0; y < 424; ++y) {
     for(int x = 0; x < 512; ++x, m_ptr += 9)
     {
       impl_->processPixelStage1(x, y, packet.buffer, m_ptr + 0, m_ptr + 3, m_ptr + 6);
     }
+  }
 
   // bilateral filtering
   if(impl_->enable_bilateral_filter)
