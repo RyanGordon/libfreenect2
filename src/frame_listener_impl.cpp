@@ -139,14 +139,14 @@ void SyncMultiFrameListener::release(FrameMap &frame)
  * @param type Type of the new frame.
  * @param frame Received frame.
  */
-bool SyncMultiFrameListener::onNewFrame(Frame::Type type, Frame *frame)
+bool SyncMultiFrameListener::onNewFrame(Frame::Type frame_type, Frame *frame)
 {
-  if((impl_->subscribed_frame_types_ & type) == 0) return false;
+  if((impl_->subscribed_frame_types_ & frame_type) == 0) return false;
 
   {
     libfreenect2::lock_guard l(impl_->mutex_);
 
-    FrameMap::iterator it = impl_->next_frame_.find(type);
+    FrameMap::iterator it = impl_->next_frame_.find(frame_type);
 
     if(it != impl_->next_frame_.end())
     {
@@ -156,10 +156,10 @@ bool SyncMultiFrameListener::onNewFrame(Frame::Type type, Frame *frame)
     }
     else
     {
-      impl_->next_frame_[type] = frame;
+      impl_->next_frame_[frame_type] = frame;
     }
 
-    impl_->ready_frame_types_ |= type;
+    impl_->ready_frame_types_ |= frame_type;
   }
 
   impl_->condition_.notify_one();

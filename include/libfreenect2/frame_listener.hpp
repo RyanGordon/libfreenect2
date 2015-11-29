@@ -104,7 +104,7 @@ public:
    * @param type Type of the new frame.
    * @param frame Data of the frame.
    */
-  virtual bool onNewFrame(Frame::Type type, Frame *frame) = 0;
+  virtual bool onNewFrame(Frame::Type frame_type, Frame *frame) = 0;
 };
 
 } /* namespace libfreenect2 */
