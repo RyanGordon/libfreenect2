@@ -36,14 +36,18 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#ifdef __APPLE__
-#include <OpenCL/cl.hpp>
-#else
+#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
+#define CL_USE_DEPRECATED_OPENCL_2_0_APIS
+
+#ifdef LIBFREENECT2_OPENCL_ICD_LOADER_IS_OLD
 #define CL_USE_DEPRECATED_OPENCL_1_1_APIS
 #include <CL/cl.h>
+#ifdef CL_VERSION_1_2
 #undef CL_VERSION_1_2
+#endif //CL_VERSION_1_2
+#endif //LIBFREENECT2_OPENCL_ICD_LOADER_IS_OLD
+
 #include <CL/cl.hpp>
-#endif
 
 #ifndef REG_OPENCL_FILE
 #define REG_OPENCL_FILE ""
@@ -146,7 +150,19 @@ public:
 
     const int CL_ICDL_VERSION = 2;
     typedef cl_int (*icdloader_func)(int, size_t, void*, size_t*);
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
     icdloader_func clGetICDLoaderInfoOCLICD = (icdloader_func)clGetExtensionFunctionAddress("clGetICDLoaderInfoOCLICD");
+#ifdef _MSC_VER
+#pragma warning(pop)
+#else
+#pragma GCC diagnostic pop
+#endif
     if (clGetICDLoaderInfoOCLICD != NULL)
     {
       char buf[16];
@@ -638,28 +654,15 @@ void OpenCLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char *
   impl_->fill_trig_table(p0table);
 }
 
-void OpenCLDepthPacketProcessor::loadXTableFromFile(const char *filename)
+void OpenCLDepthPacketProcessor::loadXZTables(const float *xtable, const float *ztable)
 {
-  if(!loadBufferFromResources(filename, (unsigned char *)impl_->x_table, impl_->image_size * sizeof(float)))
-  {
-    LOG_ERROR << "could not load x table from: " << filename;
-  }
+  std::copy(xtable, xtable + TABLE_SIZE, impl_->x_table);
+  std::copy(ztable, ztable + TABLE_SIZE, impl_->z_table);
 }
 
-void OpenCLDepthPacketProcessor::loadZTableFromFile(const char *filename)
+void OpenCLDepthPacketProcessor::loadLookupTable(const short *lut)
 {
-  if(!loadBufferFromResources(filename, (unsigned char *)impl_->z_table, impl_->image_size * sizeof(float)))
-  {
-    LOG_ERROR << "could not load z table from: " << filename;
-  }
-}
-
-void OpenCLDepthPacketProcessor::load11To16LutFromFile(const char *filename)
-{
-  if(!loadBufferFromResources(filename, (unsigned char *)impl_->lut11to16, 2048 * sizeof(cl_ushort)))
-  {
-    LOG_ERROR << "could not load lut table from: " << filename;
-  }
+  std::copy(lut, lut + LUT_SIZE, impl_->lut11to16);
 }
 
 void OpenCLDepthPacketProcessor::process(const DepthPacket &packet)

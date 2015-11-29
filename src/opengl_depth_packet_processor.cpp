@@ -111,19 +111,6 @@ std::string loadShaderSource(const std::string& filename)
   return std::string(reinterpret_cast<const char*>(data), length);
 }
 
-bool loadBufferFromFile(const std::string& filename, unsigned char *buffer, size_t n)
-{
-  bool success = true;
-  std::ifstream in(filename.c_str());
-
-  in.read(reinterpret_cast<char*>(buffer), n);
-  success = in.gcount() == n;
-
-  in.close();
-
-  return success;
-}
-
 struct ShaderProgram : public WithOpenGLBindings
 {
   typedef std::map<std::string, int> FragDataMap;
@@ -322,6 +309,9 @@ public:
 
   void allocate(size_t new_width, size_t new_height)
   {
+    if (size)
+      return;
+
     GLint max_size;
     glGetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE, &max_size);
     if (new_width > max_size || new_height > max_size)
@@ -397,8 +387,9 @@ public:
   }
 };
 
-struct OpenGLDepthPacketProcessorImpl : public WithOpenGLBindings, public WithPerfLogging
+class OpenGLDepthPacketProcessorImpl : public WithOpenGLBindings, public WithPerfLogging
 {
+public:
   GLFWwindow *opengl_context_ptr;
   libfreenect2::DepthPacketProcessor::Config config;
 
@@ -595,50 +586,54 @@ struct OpenGLDepthPacketProcessorImpl : public WithOpenGLBindings, public WithPe
     GLenum debug_attachment = do_debug ? GL_COLOR_ATTACHMENT0 : GL_NONE;
 
     gl()->glGenFramebuffers(1, &stage1_framebuffer);
-    gl()->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stage1_framebuffer);
+    gl()->glBindFramebuffer(GL_FRAMEBUFFER, stage1_framebuffer);
 
     const GLenum stage1_buffers[] = { debug_attachment, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
     gl()->glDrawBuffers(5, stage1_buffers);
+    glReadBuffer(GL_COLOR_ATTACHMENT4);
 
     if(do_debug) gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, stage1_debug.texture, 0);
     gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, stage1_data[0].texture, 0);
     gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE, stage1_data[1].texture, 0);
     gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_RECTANGLE, stage1_data[2].texture, 0);
     gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_RECTANGLE, stage1_infrared.texture, 0);
-    checkFBO(GL_DRAW_FRAMEBUFFER);
+    checkFBO(GL_FRAMEBUFFER);
 
     gl()->glGenFramebuffers(1, &filter1_framebuffer);
-    gl()->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, filter1_framebuffer);
+    gl()->glBindFramebuffer(GL_FRAMEBUFFER, filter1_framebuffer);
 
     const GLenum filter1_buffers[] = { debug_attachment, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
     gl()->glDrawBuffers(4, filter1_buffers);
+    glReadBuffer(GL_NONE);
 
     if(do_debug) gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, filter1_debug.texture, 0);
     gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, filter1_data[0].texture, 0);
     gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE, filter1_data[1].texture, 0);
     gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_RECTANGLE, filter1_max_edge_test.texture, 0);
-    checkFBO(GL_DRAW_FRAMEBUFFER);
+    checkFBO(GL_FRAMEBUFFER);
 
     gl()->glGenFramebuffers(1, &stage2_framebuffer);
-    gl()->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stage2_framebuffer);
+    gl()->glBindFramebuffer(GL_FRAMEBUFFER, stage2_framebuffer);
 
     const GLenum stage2_buffers[] = { debug_attachment, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
     gl()->glDrawBuffers(3, stage2_buffers);
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
 
     if(do_debug) gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, stage2_debug.texture, 0);
     gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, stage2_depth.texture, 0);
     gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_RECTANGLE, stage2_depth_and_ir_sum.texture, 0);
-    checkFBO(GL_DRAW_FRAMEBUFFER);
+    checkFBO(GL_FRAMEBUFFER);
 
     gl()->glGenFramebuffers(1, &filter2_framebuffer);
-    gl()->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, filter2_framebuffer);
+    gl()->glBindFramebuffer(GL_FRAMEBUFFER, filter2_framebuffer);
 
     const GLenum filter2_buffers[] = { debug_attachment, GL_COLOR_ATTACHMENT1 };
     gl()->glDrawBuffers(2, filter2_buffers);
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
 
     if(do_debug) gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_RECTANGLE, filter2_debug.texture, 0);
     gl()->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_RECTANGLE, filter2_depth.texture, 0);
-    checkFBO(GL_DRAW_FRAMEBUFFER);
+    checkFBO(GL_FRAMEBUFFER);
 
     Vertex bl = {-1.0f, -1.0f, 0.0f, 0.0f }, br = { 1.0f, -1.0f, 512.0f, 0.0f }, tl = {-1.0f, 1.0f, 0.0f, 424.0f }, tr = { 1.0f, 1.0f, 512.0f, 424.0f };
     Vertex vertices[] = {
@@ -930,98 +925,26 @@ void OpenGLDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* 
 
 }
 
-void OpenGLDepthPacketProcessor::loadP0TablesFromFiles(const char* p0_filename, const char* p1_filename, const char* p2_filename)
-{
-  ChangeCurrentOpenGLContext ctx(impl_->opengl_context_ptr);
-
-  impl_->p0table[0].allocate(512, 424);
-  if(loadBufferFromFile(p0_filename, impl_->p0table[0].data, impl_->p0table[0].size))
-  {
-    impl_->p0table[0].upload();
-  }
-  else
-  {
-    LOG_ERROR << "Loading p0table 0 from '" << p0_filename << "' failed!";
-  }
-
-  impl_->p0table[1].allocate(512, 424);
-  if(loadBufferFromFile(p1_filename, impl_->p0table[1].data, impl_->p0table[1].size))
-  {
-    impl_->p0table[1].upload();
-  }
-  else
-  {
-    LOG_ERROR << "Loading p0table 1 from '" << p1_filename << "' failed!";
-  }
-
-  impl_->p0table[2].allocate(512, 424);
-  if(loadBufferFromFile(p2_filename, impl_->p0table[2].data, impl_->p0table[2].size))
-  {
-    impl_->p0table[2].upload();
-  }
-  else
-  {
-    LOG_ERROR << "Loading p0table 2 from '" << p2_filename << "' failed!";
-  }
-}
-
-void OpenGLDepthPacketProcessor::loadXTableFromFile(const char* filename)
+void OpenGLDepthPacketProcessor::loadXZTables(const float *xtable, const float *ztable)
 {
   ChangeCurrentOpenGLContext ctx(impl_->opengl_context_ptr);
 
   impl_->x_table.allocate(512, 424);
-  const unsigned char *data;
-  size_t length;
-
-  if(loadResource("xTable.bin", &data, &length))
-  {
-    std::copy(data, data + length, impl_->x_table.data);
-    impl_->x_table.upload();
-  }
-  else
-  {
-    LOG_ERROR << "Loading xtable from resource 'xTable.bin' failed!";
-  }
-}
-
-void OpenGLDepthPacketProcessor::loadZTableFromFile(const char* filename)
-{
-  ChangeCurrentOpenGLContext ctx(impl_->opengl_context_ptr);
+  std::copy(xtable, xtable + TABLE_SIZE, (float *)impl_->x_table.data);
+  impl_->x_table.upload();
 
   impl_->z_table.allocate(512, 424);
-
-  const unsigned char *data;
-  size_t length;
-
-  if(loadResource("zTable.bin", &data, &length))
-  {
-    std::copy(data, data + length, impl_->z_table.data);
-    impl_->z_table.upload();
-  }
-  else
-  {
-    LOG_ERROR << "Loading ztable from resource 'zTable.bin' failed!";
-  }
+  std::copy(ztable, ztable + TABLE_SIZE, (float *)impl_->z_table.data);
+  impl_->z_table.upload();
 }
 
-void OpenGLDepthPacketProcessor::load11To16LutFromFile(const char* filename)
+void OpenGLDepthPacketProcessor::loadLookupTable(const short *lut)
 {
   ChangeCurrentOpenGLContext ctx(impl_->opengl_context_ptr);
 
   impl_->lut11to16.allocate(2048, 1);
-
-  const unsigned char *data;
-  size_t length;
-
-  if(loadResource("11to16.bin", &data, &length))
-  {
-    std::copy(data, data + length, impl_->lut11to16.data);
-    impl_->lut11to16.upload();
-  }
-  else
-  {
-    LOG_ERROR << "Loading 11to16 lut from resource '11to16.bin' failed!";
-  }
+  std::copy(lut, lut + LUT_SIZE, (short *)impl_->lut11to16.data);
+  impl_->lut11to16.upload();
 }
 
 void OpenGLDepthPacketProcessor::process(const DepthPacket &packet)

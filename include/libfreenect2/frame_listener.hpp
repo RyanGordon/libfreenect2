@@ -54,12 +54,28 @@ class LIBFREENECT2_API Frame
   size_t height;          ///< Number of lines in the frame.
   size_t bytes_per_pixel; ///< Number of bytes in a pixel.
   unsigned char* data;    ///< Data of the frame (aligned).
+  float exposure;         ///< Get the exposure time set by the color camera.
+  float gain;             ///< Get the gain set by the color camera.
+  float gamma;            ///< Get the gamma level set by the color camera.
 
-  Frame(size_t width, size_t height, size_t bytes_per_pixel) :
+  /** Construct a new frame.
+   * @param width Width in pixel
+   * @param height Height in pixel
+   * @param bytes_per_pixel Bytes per pixel
+   * @param data_ Memory to store frame data. If `NULL`, new memory is allocated.
+   */
+  Frame(size_t width, size_t height, size_t bytes_per_pixel, unsigned char *data_ = NULL) :
     width(width),
     height(height),
-    bytes_per_pixel(bytes_per_pixel)
+    bytes_per_pixel(bytes_per_pixel),
+    data(data_),
+    exposure(0.f),
+    gain(0.f),
+    gamma(0.f),
+    rawdata(NULL)
   {
+    if (data_)
+      return;
     const size_t alignment = 64;
     size_t space = width * height * bytes_per_pixel + alignment;
     rawdata = new unsigned char[space];
@@ -68,7 +84,7 @@ class LIBFREENECT2_API Frame
     data = reinterpret_cast<unsigned char *>(aligned);
   }
 
-  ~Frame()
+  virtual ~Frame()
   {
     delete[] rawdata;
   }

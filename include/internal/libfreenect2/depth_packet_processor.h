@@ -33,6 +33,8 @@
 #include <stdint.h>
 
 #include <libfreenect2/config.h>
+#define LIBFREENECT2_SETCONFIGURATION_COMPAT_INTERNAL
+#include <libfreenect2/libfreenect2.hpp>
 #include <libfreenect2/frame_listener.hpp>
 #include <libfreenect2/packet_processor.h>
 
@@ -40,7 +42,7 @@ namespace libfreenect2
 {
 
 /** Data packet with depth information. */
-struct LIBFREENECT2_API DepthPacket
+struct DepthPacket
 {
   uint32_t sequence;
   uint32_t timestamp;
@@ -51,23 +53,13 @@ struct LIBFREENECT2_API DepthPacket
 /** Class for processing depth information. */
 typedef PacketProcessor<DepthPacket> BaseDepthPacketProcessor;
 
-class LIBFREENECT2_API DepthPacketProcessor : public BaseDepthPacketProcessor
+class DepthPacketProcessor : public ConfigPacketProcessor, public BaseDepthPacketProcessor
 {
 public:
-  /** Configuration of depth processing. */
-  struct LIBFREENECT2_API Config
-  {
-    float MinDepth;
-    float MaxDepth;
-
-    bool EnableBilateralFilter; ///< Whether to run the bilateral filter.
-    bool EnableEdgeAwareFilter; ///< Whether to run the edge aware filter.
-
-    Config();
-  };
+  typedef Freenect2Device::Config Config;
 
   /** Parameters of depth processing. */
-  struct LIBFREENECT2_API Parameters
+  struct Parameters
   {
     float ab_multiplier;
     float ab_multiplier_per_frq[3];
@@ -110,6 +102,12 @@ public:
   virtual void setConfiguration(const libfreenect2::DepthPacketProcessor::Config &config);
 
   virtual void loadP0TablesFromCommandResponse(unsigned char* buffer, size_t buffer_length) = 0;
+
+  static const size_t TABLE_SIZE = 512*424;
+  static const size_t LUT_SIZE = 2048;
+  virtual void loadXZTables(const float *xtable, const float *ztable) = 0;
+  virtual void loadLookupTable(const short *lut) = 0;
+
 protected:
   libfreenect2::DepthPacketProcessor::Config config_;
   libfreenect2::FrameListener *listener_;
@@ -119,7 +117,7 @@ protected:
 class OpenGLDepthPacketProcessorImpl;
 
 /** Depth packet processor using OpenGL. */
-class LIBFREENECT2_API OpenGLDepthPacketProcessor : public DepthPacketProcessor
+class OpenGLDepthPacketProcessor : public DepthPacketProcessor
 {
 public:
   OpenGLDepthPacketProcessor(void *parent_opengl_context_ptr, bool debug);
@@ -128,17 +126,8 @@ public:
 
   virtual void loadP0TablesFromCommandResponse(unsigned char* buffer, size_t buffer_length);
 
-  void loadP0TablesFromFiles(const char* p0_filename, const char* p1_filename, const char* p2_filename);
-
-  /**
-   * GUESS: the x and z table follow some polynomial, until we know the exact polynom formula and its coefficients
-   * just load them from a memory dump - although they probably vary per camera
-   */
-  void loadXTableFromFile(const char* filename);
-
-  void loadZTableFromFile(const char* filename);
-
-  void load11To16LutFromFile(const char* filename);
+  virtual void loadXZTables(const float *xtable, const float *ztable);
+  virtual void loadLookupTable(const short *lut);
 
   virtual void process(const DepthPacket &packet);
 private:
@@ -150,7 +139,7 @@ private:
 class CpuDepthPacketProcessorImpl;
 
 /** Depth packet processor using the CPU. */
-class LIBFREENECT2_API CpuDepthPacketProcessor : public DepthPacketProcessor
+class CpuDepthPacketProcessor : public DepthPacketProcessor
 {
 public:
   CpuDepthPacketProcessor();
@@ -159,17 +148,8 @@ public:
 
   virtual void loadP0TablesFromCommandResponse(unsigned char* buffer, size_t buffer_length);
 
-  void loadP0TablesFromFiles(const char* p0_filename, const char* p1_filename, const char* p2_filename);
-
-  /**
-   * GUESS: the x and z table follow some polynomial, until we know the exact polynom formula and its coefficients
-   * just load them from a memory dump - although they probably vary per camera
-   */
-  void loadXTableFromFile(const char* filename);
-
-  void loadZTableFromFile(const char* filename);
-
-  void load11To16LutFromFile(const char* filename);
+  virtual void loadXZTables(const float *xtable, const float *ztable);
+  virtual void loadLookupTable(const short *lut);
 
   virtual void process(const DepthPacket &packet);
 private:
@@ -180,7 +160,7 @@ private:
 class OpenCLDepthPacketProcessorImpl;
 
 /** Depth packet processor using OpenCL. */
-class LIBFREENECT2_API OpenCLDepthPacketProcessor : public DepthPacketProcessor
+class OpenCLDepthPacketProcessor : public DepthPacketProcessor
 {
 public:
   OpenCLDepthPacketProcessor(const int deviceId = -1);
@@ -189,15 +169,8 @@ public:
 
   virtual void loadP0TablesFromCommandResponse(unsigned char* buffer, size_t buffer_length);
 
-  /**
-   * GUESS: the x and z table follow some polynomial, until we know the exact polynom formula and its coefficients
-   * just load them from a memory dump - although they probably vary per camera
-   */
-  void loadXTableFromFile(const char* filename);
-
-  void loadZTableFromFile(const char* filename);
-
-  void load11To16LutFromFile(const char* filename);
+  virtual void loadXZTables(const float *xtable, const float *ztable);
+  virtual void loadLookupTable(const short *lut);
 
   virtual void process(const DepthPacket &packet);
 private:
