@@ -112,15 +112,6 @@ public:
   virtual void close() = 0;
 };
 
-/** @deprecated Use Freenect2Device::setConfiguration() instead.
- */
-class ConfigPacketProcessor
-{
-public:
-  typedef Freenect2Device::Config Config;
-  LIBFREENECT2_DEPRECATED virtual void setConfiguration(const Config &config) = 0;
-};
-
 class Freenect2Impl;
 
 /**
@@ -143,12 +134,12 @@ public:
   std::string getDefaultDeviceSerialNumber();
 
   Freenect2Device *openDevice(int idx);
-  Freenect2Device *openDevice(int idx, const PacketPipeline *factory);
+  Freenect2Device *openDevice(int idx, const libfreenect2::PacketPipeline *factory);
   Freenect2Device *openDevice(const std::string &serial);
-  Freenect2Device *openDevice(const std::string &serial, const PacketPipeline *factory);
+  Freenect2Device *openDevice(const std::string &serial, const libfreenect2::PacketPipeline *factory);
 
   Freenect2Device *openDefaultDevice();
-  Freenect2Device *openDefaultDevice(const PacketPipeline *factory);
+  Freenect2Device *openDefaultDevice(const libfreenect2::PacketPipeline *factory);
 private:
   Freenect2Impl *impl_;
 };
