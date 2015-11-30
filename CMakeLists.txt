@@ -96,6 +96,7 @@ SET(SOURCES
   include/internal/libfreenect2/depth_packet_processor.h
   include/internal/libfreenect2/depth_packet_stream_parser.h
   include/internal/libfreenect2/double_buffer.h
+  include/libfreenect2/connected_component_labeling.h
   include/libfreenect2/frame_listener.hpp
   include/libfreenect2/frame_listener_impl.h
   include/libfreenect2/libfreenect2.hpp
@@ -120,6 +121,7 @@ SET(SOURCES
   src/depth_packet_processor.cpp
   src/cpu_depth_packet_processor.cpp
   src/resource.cpp
+  src/connected_component_labeling.cpp
   src/command_transaction.cpp
   src/registration.cpp
   src/logging.cpp

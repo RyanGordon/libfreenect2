@@ -31,6 +31,7 @@
 
 /// [headers]
 #include <libfreenect2/libfreenect2.hpp>
+ #include <libfreenect2/connected_component_labeling.h>
 #include <libfreenect2/frame_listener_impl.h>
 #include <libfreenect2/registration.h>
 #include <libfreenect2/packet_pipeline.h>
@@ -216,6 +217,11 @@ int main(int argc, char *argv[])
   libfreenect2::Frame undistorted(512, 424, 4), registered(512, 424, 4);
 /// [registration setup]
 
+/// [ccl setup]
+  libfreenect2::ConnectedComponentLabeling* connectedComponentLabeling = new libfreenect2::ConnectedComponentLabeling();
+  libfreenect2::Frame components(512, 424, 4);
+/// [ccl setup]
+
   size_t framecount = 0;
 #ifdef EXAMPLES_WITH_OPENGL_SUPPORT
   Viewer viewer;
@@ -234,6 +240,10 @@ int main(int argc, char *argv[])
     libfreenect2::Frame *depth = frames[libfreenect2::Frame::Depth];
 /// [loop start]
 
+/// [ccl]
+    connectedComponentLabeling->apply(depth, &components, 100.0);
+/// [ccl]
+
 /// [registration]
     registration->apply(rgb, depth, &undistorted, &registered);
 /// [registration]
@@ -251,7 +261,7 @@ int main(int argc, char *argv[])
     viewer.addFrame("RGB", rgb);
     viewer.addFrame("ir", ir);
     viewer.addFrame("depth", depth);
-    viewer.addFrame("registered", &registered);
+    viewer.addFrame("registered", &components);
 
     protonect_shutdown = protonect_shutdown || viewer.render();
 #endif
