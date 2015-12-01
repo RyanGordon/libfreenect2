@@ -29,7 +29,9 @@
 
 #include <string>
 #include <cmath>
+#include <algorithm>
 #include <cstdlib>
+#include <cstdio>
 #include <libfreenect2/config.h>
 #include <libfreenect2/frame_listener.hpp>
 
@@ -51,6 +53,18 @@ private:
   void setNeighbor(int *neighbors, int neighbor, int x, int y, int z, float threshold, const float *depth_data, unsigned int *components_data);
   int getMinLabel(int *neighbors, int *currentLabel);
   void saveEquivalences(int *neighbors, int minLabel, int *equivalences);
+  struct Geometry {
+    int pixels;
+    long long sumX;
+    long long sumY;
+    int centroidX;
+    int centroidY;
+    long long sumDepth;
+    int averageDepth;
+    int guid;
+  };
+  Geometry *previous_components_geometry;
+  int previous_max_label;
 };
 
 } /* namespace libfreenect2 */
