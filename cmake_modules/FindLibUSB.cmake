@@ -34,7 +34,7 @@ FIND_PATH(LibUSB_INCLUDE_DIRS
   PATHS
     "${DEPENDS_DIR}/libusb"
     "${DEPENDS_DIR}/libusbx"
-    "/opt/libusb"
+    "/usr/local/opt/libusb" # homebrew
     ENV LibUSB_ROOT
   PATH_SUFFIXES
     include
@@ -47,7 +47,7 @@ FIND_LIBRARY(LibUSB_LIBRARIES
   PATHS
     "${DEPENDS_DIR}/libusb"
     "${DEPENDS_DIR}/libusbx"
-    "/opt/libusb"
+    "/usr/local/opt/libusb" # homebrew
     ENV LibUSB_ROOT
   PATH_SUFFIXES
     lib
