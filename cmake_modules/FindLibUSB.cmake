@@ -50,12 +50,8 @@ FIND_LIBRARY(LibUSB_LIBRARIES
     "/opt/libusb"
     ENV LibUSB_ROOT
   PATH_SUFFIXES
-    x64/Release/dll
-    x64/Debug/dll
-    Win32/Release/dll
-    Win32/Debug/dll
-    MS64
-    MS64/dll
+    lib
+    lib64
 )
 
 IF(WIN32)
