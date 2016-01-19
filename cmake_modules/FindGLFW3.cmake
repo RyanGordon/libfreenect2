@@ -6,22 +6,22 @@
 # GLFW3_INCLUDE_DIRS
 # GLFW3_LIBRARIES
 
-#IF(PKG_CONFIG_FOUND)
-#  IF(APPLE)
-#    # homebrew or macports pkgconfig locations
-#    SET(ENV{PKG_CONFIG_PATH} "/usr/local/opt/glfw3/lib/pkgconfig:/opt/local/lib/pkgconfig")
-#  ENDIF()
-#  SET(ENV{PKG_CONFIG_PATH} "${DEPENDS_DIR}/glfw/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-#  PKG_CHECK_MODULES(GLFW3 glfw3)
-#
-#  FIND_LIBRARY(GLFW3_LIBRARY
-#    NAMES ${GLFW3_LIBRARIES}
-#    HINTS ${GLFW3_LIBRARY_DIRS}
-#  )
-#  SET(GLFW3_LIBRARIES ${GLFW3_LIBRARY})
-#
-#  RETURN()
-#ENDIF()
+IF(PKG_CONFIG_FOUND)
+  IF(APPLE)
+    # homebrew or macports pkgconfig locations
+    SET(ENV{PKG_CONFIG_PATH} "/usr/local/opt/glfw3/lib/pkgconfig:/opt/local/lib/pkgconfig")
+  ENDIF()
+  SET(ENV{PKG_CONFIG_PATH} "${DEPENDS_DIR}/glfw/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+  PKG_CHECK_MODULES(GLFW3 glfw3)
+
+  FIND_LIBRARY(GLFW3_LIBRARY
+    NAMES ${GLFW3_LIBRARIES}
+    HINTS ${GLFW3_LIBRARY_DIRS}
+  )
+  SET(GLFW3_LIBRARIES ${GLFW3_LIBRARY})
+
+  RETURN()
+ENDIF()
 
 FIND_PATH(GLFW3_INCLUDE_DIRS
   GLFW/glfw3.h
@@ -29,7 +29,6 @@ FIND_PATH(GLFW3_INCLUDE_DIRS
   PATHS
     "${DEPENDS_DIR}/glfw"
     "$ENV{ProgramW6432}/glfw"
-    "/opt/glfw3"
     ENV GLFW_ROOT
   PATH_SUFFIXES
     include
@@ -53,7 +52,6 @@ FIND_LIBRARY(GLFW3_LIBRARIES
   PATHS
     "${DEPENDS_DIR}/glfw"
     "$ENV{ProgramW6432}/glfw"
-    "/opt/glfw3"
     ENV GLFW_ROOT
   PATH_SUFFIXES
     lib
